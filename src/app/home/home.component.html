@@ -1,0 +1,8 @@
+<div class="container">
+  <div class="messaging">
+    <div class="inbox_msg">
+      <app-users-list [usersList]='users' (userSelected)="onUserSelected($event)"></app-users-list>
+      <app-chat-window [selectedUser]='selectedUser'></app-chat-window>
+    </div>
+  </div>
+</div>
