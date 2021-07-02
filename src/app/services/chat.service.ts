@@ -1,18 +1,17 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
-import { from } from 'rxjs';
+import { from, Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { Chat } from '../models/chat';
+import { Message } from '../models/message';
 import { User } from '../models/user';
+import { Conversation } from '../models/user-conversation';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ChatService {
 
-  constructor(private afs: AngularFirestore) { }
-
-
-  private temp: any;
   public currentUser: User;
   public otherUser;
   public messages = [];
@@ -20,11 +19,10 @@ export class ChatService {
     chatId: '',
     messages: []
   }
-  conversationId;
 
+  constructor(private afs: AngularFirestore) { }
 
-
-  createUser(uid, data) {
+  public createUser(uid, data): Observable<any> {
     return from(this.afs.doc('users/' + uid).set({
       uid: uid,
       name: data.name,
@@ -32,113 +30,65 @@ export class ChatService {
     }));
   }
 
-  updateUser(id, data) {
-    return this.afs.doc('users/' + id).update(data);
-  }
-
-
-
-  setCurrentUser(uid) {
+  public setCurrentUser(uid): Observable<User> {
     localStorage.setItem('uid', uid)
-    this.afs.doc('users/' + uid).valueChanges().subscribe(resp => {
-      this.temp = resp;
-      this.currentUser = this.temp;
-    })
+    return this.afs.doc('users/' + uid).valueChanges().pipe(
+      tap((user: User) => {
+        this.currentUser = user
+      })
+    )
   }
 
-  getCurrentUser() {
-    return this.afs.doc('users/' + localStorage.getItem('uid')).valueChanges();
+  public getUsers(): Observable<any[]> {
+    return this.afs.collection<User>('users').snapshotChanges();
   }
 
-
-  /* USERS */
-
-
-  public getUsers() {
-    return this.afs.collection<any>('users').snapshotChanges();
+  public getChat(chatId): Observable<Array<Chat>> {
+    return this.afs.collection<Chat>('conversations', ref => ref.where('chatId', '==', chatId)).valueChanges();
   }
 
-
-  /* FINAL CODE */
-
-
-  getChat(chatId) {
-    return this.afs.collection('conversations', ref => ref.where('chatId', '==', chatId)).valueChanges()
-  }
-
-
-  refreshCurrentUser() {
-    this.afs.collection('users/' + localStorage.getItem('uid')).valueChanges().subscribe(data => {
-      this.temp = data;
-      this.currentUser = this.temp;
-    })
-  }
-
-
-
-  async addConvo(user) {
-    //data to be added.
-    let userMsg = { name: user.name, uid: user.uid, chatId: this.chat.chatId }
-    let otherMsg = { name: this.currentUser.name, uid: this.currentUser.uid, chatId: this.chat.chatId }
-    //first set both references.
+  public addConvoversation(user): void {
+    let userMsg: Conversation = { name: user.name, uid: user.uid, chatId: this.chat.chatId }
+    let otherMsg: Conversation = { name: this.currentUser.name, uid: this.currentUser.uid, chatId: this.chat.chatId }
     let myReference = this.afs.doc('users/' + this.currentUser.uid);
-    let otherReference = this.afs.doc('users/' + user.uid);
-    // Updating my profile
-    myReference.get().subscribe(d => {
-      let c = d.data()
-      console.log('c', c);
-      if (!c.conversations) {
-        c.conversations = [];
+    let receiverReference = this.afs.doc('users/' + user.uid);
+
+    myReference.get().subscribe(document => {
+      let user = document.data()
+      if (!user.conversations) {
+        user.conversations = [];
       }
-      c.conversations.push(userMsg);
-      return myReference.update({ conversations: c.conversations })
+      user.conversations.push(userMsg);
+      return myReference.update({ conversations: user.conversations })
     })
-    // Updating Other User Profile
-    otherReference.get().subscribe(d => {
-      let c = d.data()
-      console.log('c', c);
-      if (!c.conversations) {
-        c.conversations = [];
+    receiverReference.get().subscribe(document => {
+      let user = document.data()
+      if (!user.conversations) {
+        user.conversations = [];
       }
-      c.conversations.push(otherMsg);
-      return otherReference.update({ conversations: c.conversations })
+      user.conversations.push(otherMsg);
+      return receiverReference.update({ conversations: user.conversations })
     })
 
   }
 
-  addNewChat() {
+  public addNewChat(): Observable<any> {
     const chatId = this.afs.createId();
-    return this.afs.doc('conversations/' + chatId).set({
+    return from(this.afs.doc('conversations/' + chatId).set({
       chatId: chatId,
       messages: []
-    }).then(() => {
+    })).pipe(tap((data: any) => {
       this.chat = {
         chatId: chatId,
         messages: []
       }
-    })
+    }));
   }
 
-  pushNewMessage(list) {
-    console.log('this-chat-x-x-x-x-x-x-', this.chat)
-    return this.afs.doc('conversations/' + this.chat.chatId).update(
+  public pushNewMessage(list: Array<Message>): Observable<any> {
+    return from(this.afs.doc('conversations/' + this.chat.chatId).update(
       { messages: list }
-    )
+    ));
   }
-
-  clearData() {
-    localStorage.clear();
-    this.messages = []
-    this.currentUser = {
-      conversations: [],
-      name: '',
-      email: '',
-      uid: ''
-    }
-    this.chat = null;
-    this.temp = null;
-
-  }
-
 
 }

@@ -1,4 +1,4 @@
-export interface UserConvo {
+export interface Conversation {
   uid: string,
   name: string,
   chatId: string,

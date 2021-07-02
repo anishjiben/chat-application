@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" *ngIf='users.length>0'>
   <div class="messaging">
     <div class="inbox_msg">
       <app-users-list [usersList]='users' (userSelected)="onUserSelected($event)"></app-users-list>

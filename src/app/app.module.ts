@@ -1,3 +1,4 @@
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
@@ -21,7 +22,7 @@ import { ChatService } from './services/chat.service';
 import { AuthGuardService } from './services/auth-guard.service';
 import {ToastModule} from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { Ng2SearchPipeModule } from 'ng2-search-filter';
 
 
 export const environment = {
@@ -49,15 +50,13 @@ export const environment = {
     FormsModule,
     BrowserModule,
     AppRoutingModule,
-    // CardModule,
-    // InputTextModule,
-    // ButtonModule,
     ReactiveFormsModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
     AngularFireAuthModule,
     ToastModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    Ng2SearchPipeModule
   ],
   providers: [AuthService, ChatService, AuthGuardService, MessageService],
   bootstrap: [AppComponent]

@@ -1,85 +1,61 @@
+import { Conversation } from './../../models/user-conversation';
+import { Message } from './../../models/message';
 import { ChatService } from './../../services/chat.service';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { User } from 'src/app/models/user';
+import { Chat } from 'src/app/models/chat';
 
 @Component({
   selector: 'app-chat-window',
   templateUrl: './chat-window.component.html',
   styleUrls: ['./chat-window.component.scss']
 })
-export class ChatWindowComponent implements OnInit {
+export class ChatWindowComponent {
 
   @Input()
   set selectedUser(user: User) {
-    console.log(user);
     this.updateChatMessages(user);
   }
 
-  messages = [];
-  temp = [];
-  message = '';
+  public messages: Array<Message> = [];
+  public message: string = '';
 
   constructor(public chatService: ChatService) { }
 
-  ngOnInit(): void {
-  }
-
-  //Selecting A User from the list (onclick)  to talk
-  updateChatMessages(user) {
-    // try {
-    //   this.helper.closeModal()
-    // } catch (e) { console.log(e) }
-
+  private updateChatMessages(user: User): void {
     if (this.chatService.currentUser.conversations == undefined) {
-      //means user has no conversations.
       this.chatService.currentUser.conversations = [];
     }
-    let convo = [...this.chatService.currentUser.conversations]; //spread operators for ensuring type Array.
-    let find = convo.find(item => item.uid == user.uid); // Check If Its the same person who user has talked to before,
-    if (find) { // Conversation Found
-      this.chatService.getChat(find.chatId).subscribe(m => {
-        this.temp = m;
-        // set the service values
-        this.chatService.chat = this.temp[0];
+    let conversations: Array<Conversation> = [...this.chatService.currentUser.conversations];
+    let conversation: Conversation = conversations.find(item => item.uid == user.uid);
+    if (conversation) {
+      this.chatService.getChat(conversation.chatId).subscribe((chats: Array<Chat>) => {
+        this.chatService.chat = chats[0];
         this.messages = this.chatService.chat.messages == undefined ? [] : this.chatService.chat.messages
-        // this.showMessages = true;
-        // setTimeout(() => {
-        //   this.triggerScrollTo() //scroll to bottom
-        // }, 1000);
         return
       })
     } else {
-      /* User is talking to someone for the very first time. */
-      this.chatService.addNewChat().then(async () => { // This will create a chatId Instance.
-        // Now we will let both the users know of the following chatId reference
-        let b = await this.chatService.addConvo(user); //passing other user info
+      this.chatService.addNewChat().subscribe(chat => {
+        this.chatService.addConvoversation(user);
       })
-
     }
   }
 
-  /* Sending a  Message */
-  sendMessage(): void {
-    // If message string is empty
+  public sendMessage(): void {
     if (this.message == '') {
-      alert('Enter message');
       return
     }
-    //set the message object
-    let msg = {
+    let msg: Message = {
       senderId: this.chatService.currentUser.uid,
       senderName: this.chatService.currentUser.name,
       timestamp: new Date(),
       content: this.message
     };
-    //empty message
     this.message = '';
-    //update
     this.messages.push(msg);
-    console.log('list', this.messages);
-    this.chatService.pushNewMessage(this.messages).then(() => {
-      console.log('sent');
-    })
+    this.chatService.pushNewMessage(this.messages).subscribe(delivered => {
+      //Aknolegment code here
+    });
   }
 
 }

@@ -1,15 +1,11 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
-import { FirebaseDatabase } from 'angularfire2';
 import { from, Observable } from 'rxjs';
-import { AngularFireDatabase } from 'angularfire2/database';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-
-  public currentUser;
 
   constructor(private angularFireAuth: AngularFireAuth) { }
 
@@ -32,10 +28,6 @@ export class AuthService {
         displayName: userName
       })
     );
-  }
-
-  public setCurrentUser(currentUser: any): void {
-    this.currentUser = currentUser;
   }
 
 }

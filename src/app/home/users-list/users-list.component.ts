@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { User } from 'src/app/models/user';
 
 @Component({
@@ -6,24 +6,15 @@ import { User } from 'src/app/models/user';
   templateUrl: './users-list.component.html',
   styleUrls: ['./users-list.component.scss']
 })
-export class UsersListComponent implements OnInit, OnChanges {
+export class UsersListComponent {
 
   @Input()
-  usersList = [];
-
+  usersList: Array<User> = [];
   @Output()
   userSelected = new EventEmitter<User>();
 
-  selectedUser: User;
-
-  constructor() { }
-
-  ngOnInit(): void {
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    console.log(changes);
-  }
+  public searchText: string;
+  public selectedUser: User;
 
   onUserSelected(user: User): void {
     this.selectedUser = user;

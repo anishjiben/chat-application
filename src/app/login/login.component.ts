@@ -6,6 +6,7 @@ import { MessageService } from 'primeng/api';
 
 import { ChatService } from './../services/chat.service';
 import { AuthService } from './../services/auth.service';
+import { User } from '../models/user';
 
 @Component({
   selector: 'app-login',
@@ -40,10 +41,10 @@ export class LoginComponent implements OnInit {
       this.loading = true;
       this.authService.login(this.loginForm.value.email, this.loginForm.value.password).subscribe(
         (response: any) => {
-          this.authService.setCurrentUser(response.user);
-          this.chatService.setCurrentUser(response.user.uid);
-          this.loading = false;
-          this.router.navigateByUrl('/home');
+          this.chatService.setCurrentUser(response.user.uid).subscribe((user: User) => {
+            this.loading = false;
+            this.router.navigateByUrl('/home');
+           });
         },
         (error) => {
           this.loading = false;

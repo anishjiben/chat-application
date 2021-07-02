@@ -1,12 +1,12 @@
+import { ChatService } from './chat.service';
 import { Injectable } from "@angular/core";
 import { CanActivate, Router } from "@angular/router";
-import { AuthService } from "./auth.service";
 
 @Injectable()
 export class AuthGuardService implements CanActivate {
-  constructor(public authService: AuthService, public router: Router) { }
+  constructor(public chatService: ChatService, public router: Router) { }
   canActivate(): boolean {
-    if (!this.authService.currentUser) {
+    if (!this.chatService.currentUser) {
       alert('Please login to continue');
       this.router.navigate(['login']);
       return false;

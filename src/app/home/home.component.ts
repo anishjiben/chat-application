@@ -10,36 +10,37 @@ import { User } from '../models/user';
 })
 export class HomeComponent implements OnInit {
 
-  users;
-  selectedUser;
+  public users: Array<User> = [];
+  public selectedUser: User;
+
   constructor(private chatService: ChatService) { }
 
   ngOnInit(): void {
     this.getAllUsers();
   }
 
-  getAllUsers() {
-    this.chatService.setCurrentUser(localStorage.getItem('uid')) //setting up the uid in the service for easy access.
+  private getAllUsers(): void {
+    this.chatService.setCurrentUser(localStorage.getItem('uid'));
     this.chatService.getUsers().pipe(
       map(actions => {
         return actions.map((a: any) => {
           let data = a.payload.doc.data();
-          let id = a.payload.doc.id;
           return { ...data }
         })
       })
-    ).subscribe(data => {
-      console.log('data', data)
-      this.users = data.filter((item) => {
-        if (item.uid !== this.chatService.currentUser.uid) {
-          return item;
+    ).subscribe((data: Array<User>) => {
+      this.users = data.filter((user: User) => {
+        if (user.uid !== this.chatService.currentUser.uid) {
+          return user;
         }
       });
-      console.log('users : ', this.users);
+      if (this.users.length > 0) {
+        this.onUserSelected(this.users[0]);
+      }
     })
   }
 
-  public onUserSelected(selectedUser: User) {
+  public onUserSelected(selectedUser: User): void {
     this.selectedUser = selectedUser;
   }
 
