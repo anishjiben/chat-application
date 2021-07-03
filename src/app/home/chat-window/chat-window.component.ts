@@ -14,9 +14,11 @@ export class ChatWindowComponent {
 
   @Input()
   set selectedUser(user: User) {
+    this.receiver = user;
     this.updateChatMessages(user);
   }
 
+  private receiver: User;
   public messages: Array<Message> = [];
   public message: string = '';
 
@@ -51,11 +53,12 @@ export class ChatWindowComponent {
       timestamp: new Date(),
       content: this.message
     };
-    this.message = '';
     this.messages.push(msg);
     this.chatService.pushNewMessage(this.messages).subscribe(delivered => {
       //Aknolegment code here
     });
+    this.chatService.updateRecentMessage(this.message, this.receiver);
+    this.message = '';
   }
 
 }

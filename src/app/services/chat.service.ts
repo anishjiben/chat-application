@@ -39,15 +39,15 @@ export class ChatService {
     )
   }
 
-  public getUsers(): Observable<any[]> {
-    return this.afs.collection<User>('users').snapshotChanges();
+  public getUsers(): Observable<any> {
+    return this.afs.collection<User>('users').get();
   }
 
   public getChat(chatId): Observable<Array<Chat>> {
     return this.afs.collection<Chat>('conversations', ref => ref.where('chatId', '==', chatId)).valueChanges();
   }
 
-  public addConvoversation(user): void {
+  public addConvoversation(user: User): void {
     let userMsg: Conversation = { name: user.name, uid: user.uid, chatId: this.chat.chatId }
     let otherMsg: Conversation = { name: this.currentUser.name, uid: this.currentUser.uid, chatId: this.chat.chatId }
     let myReference = this.afs.doc('users/' + this.currentUser.uid);
@@ -83,6 +83,30 @@ export class ChatService {
         messages: []
       }
     }));
+  }
+
+  public updateRecentMessage(message: string, user: User): void {
+    let receiverReference = this.afs.doc('users/' + user.uid);
+    let myReference = this.afs.doc('users/' + this.currentUser.uid);
+    receiverReference.get().subscribe(document => {
+      let userDocument = document.data();
+      let conversation: Conversation = userDocument.conversations.find((conversation: Conversation) => {
+        return conversation.chatId === this.chat.chatId;
+      });
+      conversation.recentMessage = message;
+      conversation.recentMsgTime = new Date();
+      return receiverReference.update(userDocument)
+    });
+
+    myReference.get().subscribe(document => {
+      let userDocument = document.data();
+      let conversation: Conversation = userDocument.conversations.find((conversation: Conversation) => {
+        return conversation.chatId === this.chat.chatId;
+      });
+      conversation.recentMessage = message;
+      conversation.recentMsgTime = new Date();
+      return myReference.update(userDocument)
+    });
   }
 
   public pushNewMessage(list: Array<Message>): Observable<any> {

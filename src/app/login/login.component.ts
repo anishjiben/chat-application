@@ -44,7 +44,7 @@ export class LoginComponent implements OnInit {
           this.chatService.setCurrentUser(response.user.uid).subscribe((user: User) => {
             this.loading = false;
             this.router.navigateByUrl('/home');
-           });
+          });
         },
         (error) => {
           this.loading = false;

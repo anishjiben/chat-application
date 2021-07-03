@@ -1,6 +1,5 @@
 import { ChatService } from './../services/chat.service';
 import { Component, OnInit } from '@angular/core';
-import { map } from 'rxjs/operators';
 import { User } from '../models/user';
 
 @Component({
@@ -20,16 +19,15 @@ export class HomeComponent implements OnInit {
   }
 
   private getAllUsers(): void {
+    this.users = [];
     this.chatService.setCurrentUser(localStorage.getItem('uid'));
     this.chatService.getUsers().pipe(
-      map(actions => {
-        return actions.map((a: any) => {
-          let data = a.payload.doc.data();
-          return { ...data }
-        })
-      })
-    ).subscribe((data: Array<User>) => {
-      this.users = data.filter((user: User) => {
+    ).subscribe((querySnapshot) => {
+      const usersList = [];
+      querySnapshot.forEach((doc) => {
+        usersList.push(doc.data());
+      });
+      this.users = usersList.filter((user: User) => {
         if (user.uid !== this.chatService.currentUser.uid) {
           return user;
         }
@@ -43,5 +41,4 @@ export class HomeComponent implements OnInit {
   public onUserSelected(selectedUser: User): void {
     this.selectedUser = selectedUser;
   }
-
 }

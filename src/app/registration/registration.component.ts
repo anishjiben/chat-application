@@ -35,6 +35,7 @@ export class RegistrationComponent implements OnInit {
     if (this.registrationForm.invalid) {
       return;
     }
+    this.loading = true;
     this.authService.signup(this.registrationForm.value.email, this.registrationForm.value.password)
       .pipe(
         concatMap((result: any) => this.chatService.createUser(result.user.uid, {
@@ -46,9 +47,11 @@ export class RegistrationComponent implements OnInit {
         concatMap((result1: any) =>
           this.authService.updateUsername(this.registrationForm.value.username)
         )).subscribe((data: any) => {
+          this.loading = false;
           this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Registered succesfully' });
           this.router.navigate(['/login']);
         }, (error: any) => {
+          this.loading = false;
           this.messageService.add({ severity: 'error', summary: 'Error', detail: `${error.message}` });
         });
   }

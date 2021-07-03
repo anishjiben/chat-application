@@ -9,16 +9,22 @@ import { User } from 'src/app/models/user';
 export class UsersListComponent {
 
   @Input()
-  usersList: Array<User> = [];
+  set usersList(users: Array<User>) {
+    this.users = users;
+    if (users.length > 0) {
+      this.selectedUser = users[0];
+    }
+  };
+
   @Output()
   userSelected = new EventEmitter<User>();
 
   public searchText: string;
   public selectedUser: User;
+  public users: Array<User> = [];
 
-  onUserSelected(user: User): void {
+  public onUserSelected(user: User): void {
     this.selectedUser = user;
     this.userSelected.emit(this.selectedUser);
   }
-
 }
